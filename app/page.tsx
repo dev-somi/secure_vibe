@@ -35,6 +35,7 @@ export default function Home() {
   const [scanMode, setScanMode] = useState<ScanMode>('UPLOAD_FILES')
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [codeContent, setCodeContent] = useState('')
+  const [language, setLanguage] = useState('.py')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const handleFilesSelected = (files: File[]) => {
@@ -70,10 +71,22 @@ export default function Home() {
             {scanMode === 'UPLOAD_FILES' ? (
               <FileDropzone onFilesSelected={handleFilesSelected} onError={handleError} />
             ) : (
-              <CodeEditorInput value={codeContent} onChange={(val) => {
-                setErrorMsg(null)
-                setCodeContent(val)
-              }} />
+              <>
+                <CodeEditorInput value={codeContent} onChange={(val) => {
+                  setErrorMsg(null)
+                  setCodeContent(val)
+                }} />
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="mt-2 ml-2 p-1 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-700"
+                >
+                  <option value=".py">Python</option>
+                  <option value=".js">JavaScript</option>
+                  <option value=".java">Java</option>
+                  <option value=".c">C/C++</option>
+                </select>
+              </>
             )}
             {errorMsg && <p className="text-red-500 mt-2 text-sm text-center font-medium">{errorMsg}</p>}
             {scanMode === 'UPLOAD_FILES' && selectedFiles.length > 0 && (
@@ -88,7 +101,7 @@ export default function Home() {
           </div>
         </div>
 
-        <ScanAction payload={{ mode: scanMode, files: selectedFiles, code: codeContent }} />
+        <ScanAction payload={{ mode: scanMode, files: selectedFiles, code: codeContent, language }} />
         
         {/* Responsive Grid for Security Info Cards */}
         {/* Mobile: 1 col, Tablet: 3 col. They stack on small screens! */}

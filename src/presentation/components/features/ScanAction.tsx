@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { executeScan, ScanPayload } from '../../../application/usecases/ExecuteScanUseCase'
+import { executeScan, ScanPayload, VulnerabilityResult } from '../../../application/usecases/ExecuteScanUseCase'
 
 interface Props {
   payload: ScanPayload
@@ -10,18 +10,16 @@ interface Props {
 export default function ScanAction({ payload }: Props) {
   const [isScanning, setIsScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [results, setResults] = useState<VulnerabilityResult[] | null>(null)
 
   const handleScan = async () => {
     setError(null)
+    setResults(null)
     setIsScanning(true)
 
     try {
-      const result = await executeScan(payload)
-      if (result.success) {
-        // We could redirect to a results page here
-        // For now, we'll just mock it and show nothing after success or an alert
-        alert(`Scan Job created: ${result.jobId}`)
-      }
+      const data = await executeScan(payload)
+      setResults(data)
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred during scan'
       setError(errorMessage)
@@ -31,7 +29,7 @@ export default function ScanAction({ payload }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center mt-12 mb-16">
+    <div className="flex flex-col items-center w-full mt-12 mb-16">
       <button
         type="button"
         onClick={handleScan}
@@ -54,8 +52,36 @@ export default function ScanAction({ payload }: Props) {
           'INITIATE SECURITY SCAN'
         )}
       </button>
-      {error && (
-        <p className="text-red-500 mt-4 text-sm font-medium">{error}</p>
+      {error && <p className="text-red-500 mt-4 text-sm font-medium">{error}</p>}
+
+      {results !== null && (
+        <div className="w-full max-w-3xl mt-8">
+          {results.length === 0 ? (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 font-semibold text-center">
+              ✅ No vulnerabilities found. Your code looks safe!
+            </div>
+          ) : (
+            <div>
+              <h4 className="text-red-600 font-bold text-lg mb-4">
+                🚨 {results.length} vulnerability{results.length > 1 ? 's' : ''} found
+              </h4>
+              <div className="flex flex-col gap-4">
+                {results.map((vuln, index) => {
+                  const cwe = vuln.extra.metadata.cwe?.[0] ?? 'No CWE'
+                  return (
+                    <div key={index} className="p-4 bg-red-50 border-l-4 border-red-500 rounded-xl">
+                      <p className="font-bold text-gray-800">
+                        [{index + 1}] Line {vuln.start.line} — Severity: {vuln.extra.severity}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">{cwe}</p>
+                      <p className="text-sm text-gray-700 mt-2">{vuln.extra.message}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
