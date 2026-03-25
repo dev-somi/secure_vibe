@@ -1,6 +1,11 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import NavBar from './NavBar'
+import { vi } from 'vitest'
+
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/scan',
+}))
 
 describe('NavBar', () => {
   it('renders standard navigation links', () => {

@@ -6,6 +6,13 @@ vi.mock('../../../application/usecases/ExecuteScanUseCase', () => ({
   executeScan: vi.fn(),
 }))
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+  }),
+  usePathname: () => '/',
+}))
+
 describe('LandingPage Integration', () => {
   it('renders all key components', () => {
     // This is an integration test to ensure all components are wired
