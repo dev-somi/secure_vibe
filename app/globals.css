@@ -10,6 +10,11 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-obsidian-green: #5EEAD4;
+}
+
+@utility glow {
+  box-shadow: 0 0 10px var(--color-obsidian-green), 0 0 20px rgba(94, 234, 212, 0.4);
 }
 
 @media (prefers-color-scheme: dark) {

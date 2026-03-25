@@ -1,65 +1,104 @@
-import Image from "next/image";
+'use client'
+
+import { useState } from 'react'
+import NavBar from '@/src/presentation/components/layout/NavBar'
+import ScanInputSelector from '@/src/presentation/components/features/ScanInputSelector'
+import FileDropzone from '@/src/presentation/components/features/FileDropzone'
+import CodeEditorInput from '@/src/presentation/components/features/CodeEditorInput'
+import ScanAction from '@/src/presentation/components/features/ScanAction'
+import SecurityInfoCard from '@/src/presentation/components/features/SecurityInfoCard'
+import { ScanMode } from '@/src/domain/entities/ScanType'
+import { SecurityFeature } from '@/src/domain/entities/SecurityFeature'
+
+const SECURITY_FEATURES: SecurityFeature[] = [
+  {
+    id: 'ai-scan',
+    title: 'Deep AI Scanning',
+    description: 'Advanced AI analysis to detect zero-day vulnerabilities and complex logic flaws that traditional scanners miss.',
+    iconType: 'ai'
+  },
+  {
+    id: 'owasp',
+    title: 'OWASP Top 10',
+    description: 'Complete coverage of OWASP top 10 security risks including Injection, Broken Authentication, and XSS.',
+    iconType: 'shield'
+  },
+  {
+    id: 'zk',
+    title: 'Zero-Knowledge',
+    description: 'Your code never leaves your browser. All static analysis is performed locally for ultimate privacy.',
+    iconType: 'lock'
+  }
+]
 
 export default function Home() {
+  const [scanMode, setScanMode] = useState<ScanMode>('UPLOAD_FILES')
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [codeContent, setCodeContent] = useState('')
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  const handleFilesSelected = (files: File[]) => {
+    setErrorMsg(null)
+    setSelectedFiles(files)
+  }
+
+  const handleError = (msg: string) => {
+    setErrorMsg(msg)
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-gray-50 flex flex-col font-[Arial,Helvetica,sans-serif]">
+      <NavBar />
+      
+      <main className="flex-1 flex flex-col pt-12 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+        
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
+            Secure your code with continuous <br /> <span className="text-obsidian-green">Intelligent Analysis</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-xl text-gray-500 max-w-2xl mx-auto">
+            Drag and drop your project files or paste snippets instantly. Detect vulnerabilities before they hit production.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Input area */}
+        <div className="max-w-3xl mx-auto w-full mb-8 relative z-10">
+          <ScanInputSelector currentMode={scanMode} onChange={setScanMode} />
+          
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-2">
+            {scanMode === 'UPLOAD_FILES' ? (
+              <FileDropzone onFilesSelected={handleFilesSelected} onError={handleError} />
+            ) : (
+              <CodeEditorInput value={codeContent} onChange={(val) => {
+                setErrorMsg(null)
+                setCodeContent(val)
+              }} />
+            )}
+            {errorMsg && <p className="text-red-500 mt-2 text-sm text-center font-medium">{errorMsg}</p>}
+            {scanMode === 'UPLOAD_FILES' && selectedFiles.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                {selectedFiles.map(f => (
+                  <span key={f.name} className="px-3 py-1 bg-teal-50 text-teal-800 rounded-full text-xs font-medium border border-teal-200">
+                    {f.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
+
+        <ScanAction payload={{ mode: scanMode, files: selectedFiles, code: codeContent }} />
+        
+        {/* Responsive Grid for Security Info Cards */}
+        {/* Mobile: 1 col, Tablet: 3 col. They stack on small screens! */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-auto pb-16">
+          {SECURITY_FEATURES.map(feature => (
+            <SecurityInfoCard key={feature.id} feature={feature} />
+          ))}
+        </div>
+        
       </main>
     </div>
-  );
+  )
 }
